@@ -1,0 +1,16 @@
+node_modules/
+public/images/
+logs/
+static/
+dump/
+routes/documentation/
+tmp/
+
+secrets.js
+public/robots.txt
+*.log
+*.html
+!down.html
+*.css
+apidoc.json
+*.pid
