@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(lib){
+module.exports = function(libs){
 	var helper = {};
 
 	/** Basic helper function **/
@@ -15,6 +15,11 @@ module.exports = function(lib){
 		var delimiters = /[\s_.,'"+:?!@#^*()\[\]\-]+/;
 		var words = text.toLowerCase().split(delimiters).filter(function(str){ return !!str; });
 		return Array.from(new Set(words));
+	};
+
+	// return array of [error, value] from resolved/rejected promise
+	helper.wrapPromise = function(promise){
+		return promise.then(data => [null, data]).catch(err => [err]);
 	};
 
 	// build keywords for search
@@ -37,7 +42,7 @@ module.exports = function(lib){
 			return null;
 		}
 		str = str.toString().trim().replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-		str = lib.sanitizeCaja(str).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+		str = libs.sanitizeCaja(str).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 		return str || null;
 	};
 
@@ -69,7 +74,7 @@ module.exports = function(lib){
 
 	// hashing password
 	helper.hashPassword = function(password, salt){
-		return lib.crypto.createHash('sha512').update(password + salt).digest('hex');
+		return libs.crypto.createHash('sha512').update(password + salt).digest('hex');
 	};
 
 	// create custom error object
@@ -136,11 +141,11 @@ module.exports = function(lib){
 	/** Datetime helper function **/
 
 	helper.getDateTimeString = function(date){
-		return lib.moment(date).format("YYYY-MM-DD HH:mm:ss");
+		return libs.moment(date).format("YYYY-MM-DD HH:mm:ss");
 	};
 
 	helper.getTimeString = function(date){
-		return lib.moment(date).format("HH:mm:ss");
+		return libs.moment(date).format("HH:mm:ss");
 	};
 
 	return helper;

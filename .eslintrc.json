@@ -1,0 +1,38 @@
+{
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "rules": {
+    "semi": 2,
+    "no-unused-vars": 0,
+    "no-console": 0,
+    "no-mixed-spaces-and-tabs": 0,
+    "no-useless-escape": 0
+  },
+  "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+  },
+  "globals": {
+    "global": true,
+    "helper": true,
+    "__dirname": true,
+    "process": true,
+    "jQuery": true,
+    "console": true,
+    "module": true,
+    "setTimeout": true,
+    "logger": true,
+    "require": true,
+    "Buffer": true,
+    "document": true,
+    "_": true,
+    "config": true,
+    "rootRequire": true,
+    "Promise": true,
+    "co": true,
+    "wrap": true
+  }
+}

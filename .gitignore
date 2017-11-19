@@ -13,4 +13,5 @@ public/robots.txt
 !down.html
 *.css
 apidoc.json
+package-lock.json
 *.pid

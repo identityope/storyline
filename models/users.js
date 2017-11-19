@@ -8,9 +8,8 @@ module.exports = function(mongoose){
 	var schema = new Schema({
 		_id: ObjectId,
 		username: String,
-		password: String,
-		salt: String,
 		email: String,
+		password: String,
 		username_lowercase: String,
 		email_lowercase: String,
 		account_status: Number,
@@ -33,7 +32,7 @@ module.exports = function(mongoose){
 		},
 		keywords: [String],
 		data: {
-			registration_time: Date,
+			registration_date: Date,
 			registration_platform: String,
 			registration_device: { // for mobile app
 				device_id: String,
@@ -57,16 +56,17 @@ module.exports = function(mongoose){
 			total_followings: Number,
 			total_followers: Number,
 			is_phone_verified: Boolean,
-            is_email_verified: Boolean,
-            email_code: String,
-            phone_code: String,
-            last_sent_sms: Date,
-            total_sent_sms: Number,
-            reset_password_code: String,
-            reset_password_time: Date
+			is_email_verified: Boolean,
+			email_code: String,
+			phone_code: String,
+			last_sent_sms: Date,
+			total_sent_sms: Number,
+			reset_password_code: String,
+			reset_password_date: Date
 		},
 		online_devices: [{
 			_id: false,
+			device_id: String,
 			device_model: String,
 			device_notif_type: String,
 			device_notif_id: String
@@ -97,127 +97,73 @@ module.exports = function(mongoose){
 
 	var Model = mongoose.model(collection, schema);
 
-	/** Enumeration definition **/
+	/** Enumeration & Constants **/
 	Model.genderEnum = Object.freeze({
 		WOMEN: 0,
-    	MEN: 1
-    });
+		MEN: 1
+	});
 
-    Model.restrictedUsernames = ["admin", "docs", "blog", "story", "storyline", "user", "public", "images", "contact", "support", "server"];
+	Model.restrictedUsernames = ["admin", "docs", "blog", "story", "storyline", "user", "public", "images", "contact", "support", "server"];
+
+	const default_projection = {"password": 0, "keywords": 0, "online_devices": 0, "followings": 0, "followers": 0};
 
 	/** Create Function ***/
-	Model.create = function(user_obj, callback){
+	Model.create = async function(user_obj){
 		user_obj._id = new mongoose.Types.ObjectId();
-		var user = new Model(user_obj);
-		user.save(function(err, obj){
-			if(err || !obj){
-				return callback(err);
-			}
-			callback(null, obj.toObject());
-		});
+		var user = await new Model(user_obj).save();
+		return user ? user.toObject() : null;
 	};
 
 	/** Read Functions **/
-	Model.findAll = function(callback){
-		Model.find({}, {}, {"sort": {"_id": 1}}, function(err, users){
-			if(err || !users){
-				return callback(err);
-			}
-			callback(null, users.map(helper.mapObjects));
-		});
+	Model.findAll = async function(projection = default_projection){
+		var users = await Model.find({}, projection, {"sort": {"_id": 1}}).exec();
+		return users ? users.map(helper.mapObjects) : null;
 	};
 
-	Model.findById = function(user_id, callback){
-		Model.findOne({"_id": user_id}, function(err, user){
-			if(err || !user){
-				return callback(err);
-			}
-			callback(null, user.toObject());
-		});
+	Model.findById = async function(user_id, projection = default_projection){
+		var user = await Model.findOne({"_id": user_id}, projection).exec();
+		return user ? user.toObject() : null;
 	};
 
-	Model.findByIdWithProjection = function(user_id, projection, callback){
-		Model.findOne({"_id": user_id}, projection, function(err, user){
-			if(err || !user){
-				return callback(err);
-			}
-			callback(null, user.toObject());
-		});
+	Model.findByUsername = async function(username, projection = default_projection){
+		var user = await Model.findOne({"username_lowercase": username.toLowerCase()}, projection).exec();
+		return user ? user.toObject() : null;
 	};
 
-	Model.findByUsername = function(username, callback){
-		Model.findOne({"username_lowercase": username.toLowerCase()}, function(err, user){
-			if(err || !user){
-				return callback(err);
-			}
-			callback(null, user.toObject());
-		});
+	Model.findByEmail = async function(email, projection = default_projection){
+		var user = await Model.findOne({"email_lowercase": email.toLowerCase()}, projection).exec();
+		return user ? user.toObject() : null;
 	};
 
-	Model.findByEmail = function(email, callback){
-		Model.findOne({"email_lowercase": email.toLowerCase()}, function(err, user){
-			if(err || !user){
-				return callback(err);
-			}
-			callback(null, user.toObject());
-		});
-	};
-
-	Model.findByUsernameOrEmail = function(username, email, callback){
+	Model.findByUsernameOrEmail = async function(username_email, projection = default_projection){
 		var query = {"$or": [
-			{"username_lowercase": username.toLowerCase()},
-			{"email_lowercase": email.toLowerCase()}
+			{"username_lowercase": username_email.toLowerCase()},
+			{"email_lowercase": username_email.toLowerCase()}
 		]};
-		Model.findOne(query, function(err, user){
-			if(err || !user){
-				return callback(err);
-			}
-			callback(null, user.toObject());
-		});
+		var user = await Model.findOne(query, projection).exec();
+		return user ? user.toObject() : null;
 	};
 
-	Model.findByGoogleEmail = function(email, callback){
+	Model.findByGoogleEmail = async function(email, projection = default_projection){
 		var emailWithoutDot = email.toLowerCase().split("gmail.")[0].split("googlemail.")[0].replace(/\./g, "");
-        var emailRegex = "^"+emailWithoutDot.split("").join("\\.*");
-        var query = {"email_lowercase": {"$regex": new RegExp(emailRegex)}};
-
-        Model.findOne(query, function(err, user){
-            if(err || !user){
-                return callback(err);
-            }
-            callback(null, user.toObject());
-        });
+		var emailRegex = "^"+emailWithoutDot.split("").join("\\.*");
+		var query = {"email_lowercase": {"$regex": new RegExp(emailRegex)}};
+		var user = await Model.findOne(query, projection).exec();
+		return user ? user.toObject() : null;
 	};
 
-	Model.findByIds = function(user_ids, callback){
-		Model.find({"_id": {"$in": user_ids}}, function(err, users){
-			if(err || !users){
-				return callback(err);
-			}
-			callback(null, users.map(helper.mapObjects));
-		});
-	};
-
-	Model.findByIdsWithProjection = function(user_ids, projection, callback){
-		Model.findOne({"_id": {"$in": user_ids}}, projection, function(err, users){
-			if(err || !users){
-				return callback(err);
-			}
-			callback(null, users.map(helper.mapObjects));
-		});
+	Model.findByIds = async function(user_ids, projection = default_projection){
+		var users = await Model.find({"_id": {"$in": user_ids}}, projection).exec();
+		return users ? users.map(helper.mapObjects) : null;
 	};
 
 	/** Update functions **/
-	Model.updateById = function(user_id, update_obj, callback){
-		Model.update({"_id": user_id}, update_obj, {"multi": false}, function(err, res){
-			if(err || !res){
-				return callback(err);
-			}
-			callback(null, res.n > 0);
-		});
+	Model.updateById = async function(user_id, update_obj){
+		var result = await Model.update({"_id": user_id}, update_obj, {"multi": false}).exec();
+		return result ? (result.n > 0) : null;
 	};
 
-	Model.updateLoginData = function(user_id, online_device_obj, app_version, advertising_obj, callback){
+	Model.updateLoginData = async function(user_id, online_device_obj, app_version, advertising_obj){
 		var today = new Date();
 		var query = {"_id": user_id};
 		var update = {"$set": {
@@ -229,15 +175,11 @@ module.exports = function(mongoose){
 			"online_devices": online_device_obj
 		}};
 		// update data
-		Model.update(query, update, function(err, result){
-			if(err || !result){
-				return callback(err);
-			}
-			callback(null, result.n > 0);
-		});
+		var result = await Model.update(query, update).exec();
+		return result ? (result.n > 0) : null;
 	};
 
-	Model.updateLogoutData = function(user_id, device_notif_type, device_notif_id, callback){
+	Model.updateLogoutData = async function(user_id, device_notif_type, device_notif_id){
 		var today = new Date();
 		var query = {"_id": user_id};
 		var update = {"$set": {
@@ -246,22 +188,14 @@ module.exports = function(mongoose){
 			"online_devices": {"device_notif_type": device_notif_type, "device_notif_id": device_notif_id}
 		}};
 		// update data
-		Model.update(query, update, function(err, result){
-			if(err || !result){
-				return callback(err);
-			}
-			callback(null, result.n > 0);
-		});
+		var result = await Model.update(query, update).exec();
+		return result ? (result.n > 0) : null;
 	};
 
 	/** Delete functions **/
-	Model.deleteById = function(user_id, callback){
-		Model.remove({"_id": user_id}, function(err, res){
-			if(err || !res){
-				return callback(err);
-			}
-			callback(null, res.result.n > 0);
-		});
+	Model.deleteById = async function(user_id){
+		var result = await Model.remove({"_id": user_id}).exec();
+		return result ? (result.result.n > 0) : null;
 	};
 
 	return Model;

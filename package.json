@@ -2,12 +2,18 @@
   "name": "storyline",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "A personal story sharing application.",
   "scripts": {
     "local": "nodemon ./bin/www local",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "story",
+    "sharing",
+    "social",
+    "media",
+    "microblogging"
+  ],
   "author": "ope",
   "license": "ISC",
   "apidoc": {
@@ -23,6 +29,8 @@
     "apidoc": "^0.17.6",
     "async": "^2.5.0",
     "basic-auth-connect": "^1.0.0",
+    "bcrypt": "^1.0.3",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.17.2",
     "compression": "^1.6.2",
     "cookie-parser": "^1.4.3",
@@ -35,6 +43,7 @@
     "express-mailer": "^0.3.1",
     "fast-csv": "^2.4.0",
     "jade": "^1.11.0",
+    "jsonwebtoken": "^8.0.1",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "mongodb": "^2.2.29",
@@ -42,7 +51,6 @@
     "multer": "^1.3.0",
     "newrelic": "^1.40.0",
     "node-time-uuid": "^0.1.5",
-    "node-uuid": "^1.4.8",
     "nodemailer": "^4.0.1",
     "redis": "^2.7.1",
     "request": "^2.81.0",
@@ -53,11 +61,12 @@
     "shortid": "^2.2.8",
     "streamifier": "^0.1.1",
     "stylus": "^0.54.5",
+    "uuid": "^3.1.0",
     "xoauth2": "^1.2.0"
   },
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-apidoc": "^0.11.0",
-    "grunt-contrib-jshint": "^1.1.0"
+    "grunt-eslint": "^20.1.0"
   }
 }

@@ -1,5 +1,7 @@
 "use strict";
 
+const log = rootRequire("libs/logger")('[user]');
+
 module.exports = function(models, controllers, api){
 
 	/**
@@ -28,7 +30,7 @@ module.exports = function(models, controllers, api){
 	 * @apiSuccess {Object} data User object
 	 *
 	 */
-	api.post("/user/register", false, function(req, res, auth){
+	api.post("/user/register", false, async function(req, res, auth){
 		var username = helper.sanitize(req.body.username);
 		var email = helper.sanitize(req.body.email);
 		var password = helper.sanitize(req.body.password);
@@ -44,7 +46,7 @@ module.exports = function(models, controllers, api){
 		var advertising_id = helper.sanitize(req.body.advertising_id);
 		var device_obj = {};
 		// check device info from mobile app
-		if(device_notif_type && device_notif_id){
+		if (device_notif_type && device_notif_id) {
 			device_obj.device_id = device_id;
 			device_obj.device_model = device_model;
 			device_obj.device_imei = device_imei;
@@ -61,29 +63,28 @@ module.exports = function(models, controllers, api){
 		if (!username_valid) {
 			return res.reply(400, "Username harus terdiri dari 4 sampai 15 karakter alphanumerik dan/atau _");
 		}
-		if(username && models.users.restrictedUsernames.indexOf(username) > -1){
+		if (username && models.users.restrictedUsernames.indexOf(username) > -1) {
 			return res.reply(403, "Username ini tidak dapat digunakan");
 		}
-		if(!email || email.indexOf("@") === -1 || email.indexOf(".") === -1){ // very simple email validation
+		if (!email || email.indexOf("@") === -1 || email.indexOf(".") === -1) { // very simple email validation
 			return res.reply(400, "Harap isi email dengan benar");
 		}
-		if(!password || password.length < 6){
+		if (!password || password.length < 6) {
 			return res.reply(400, "Password harus terdiri dari minimal 6 karakter");
 		}
-		// register new user
-		controllers.user.register(username, email, password, platform, device_obj, app_version, advertising_obj, function(err, new_user){
-			if(err){
-				return res.reply(err.status_code || 500, err.message || err);
-			}
-			// login this user
-			controllers.authentication.login(new_user._id, function(err, token){
-				if(err){
-					return res.reply(500, err);
-				}
-				new_user.token = token;
-				res.reply(200, null, new_user);
-			});
-		});
+		// register a new user
+		var [err, new_user] = await wrap(controllers.user.register(username, email, password, platform, device_obj, app_version, advertising_obj));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		// login this new user
+		var ip_address = req.ip;
+		var user_agent = req.headers['user-agent'];
+		var online_device_obj = _.pick(device_obj, ["device_id", "device_model", "device_notif_type", "device_notif_id"]);
+		var token = await controllers.authentication.login(new_user, ip_address, user_agent, online_device_obj);
+		new_user.token = token;
+		res.reply(200, null, new_user);
 	});
 
 	/**
@@ -97,6 +98,7 @@ module.exports = function(models, controllers, api){
 	 *
 	 * @apiParam {String} username_email User's username
 	 * @apiParam {Password} password User's password
+	 * @apiParam {String} device_id User's device ID
 	 * @apiParam {String} device_model User's device model
 	 * @apiParam {String} device_notif_type User's device push notification type (APNS or FCM)
 	 * @apiParam {String} device_notif_id User's device push notification ID
@@ -107,9 +109,10 @@ module.exports = function(models, controllers, api){
 	 * @apiSuccess {Object} data User object
 	 *
 	 */
-	api.post("/user/login", false, function(req, res, auth){
+	api.post("/user/login", false, async function(req, res, auth){
 		var username_email = helper.sanitize(req.body.username_email);
 		var password = helper.sanitize(req.body.password);
+		var device_id = helper.sanitize(req.body.device_id);
 		var device_model = helper.sanitize(req.body.device_model);
 		var device_notif_type = helper.sanitize(req.body.device_notif_type);
 		var device_notif_id = helper.sanitize(req.body.device_notif_id);
@@ -118,7 +121,8 @@ module.exports = function(models, controllers, api){
 		var advertising_id = helper.sanitize(req.body.advertising_id);
 		var online_device_obj = {};
 		// check device info from mobile app
-		if(device_notif_type && device_notif_id){
+		if (device_notif_type && device_notif_id) {
+			online_device_obj.device_id = device_id;
 			online_device_obj.device_model = device_model;
 			online_device_obj.device_notif_type = device_notif_type;
 			online_device_obj.device_notif_id = device_notif_id;
@@ -128,29 +132,26 @@ module.exports = function(models, controllers, api){
 			"ads_id": advertising_id
 		};
 		// check params
-		if(!username_email){
+		if (!username_email) {
 			return res.reply(400, "Username atau email tidak boleh kosong");
 		}
-		if(!password){
+		if (!password) {
 			return res.reply(400, "Password tidak boleh kosong");
 		}
 		// login this user
-		controllers.user.login(username_email, password, online_device_obj, app_version, advertising_obj, function(err, user){
-			if(err){
-				return res.reply(err.status_code || 500, err.message || err);
-			}
-			if(!user){
-				return res.reply(404, "Username atau email tidak ditemukan");
-			}
-			// login this user
-			controllers.authentication.login(user._id, function(err, token){
-				if(err){
-					return res.reply(500, err);
-				}
-				user.token = token;
-				res.reply(200, null, user);
-			});
-		});
+		var [err, user] = await wrap(controllers.user.login(username_email, password, online_device_obj, app_version, advertising_obj));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!user) {
+			return res.reply(404, "Username atau email tidak ditemukan");
+		}
+		var ip_address = req.ip;
+		var user_agent = req.headers['user-agent'];
+		var token = await controllers.authentication.login(user, ip_address, user_agent, online_device_obj);
+		user.token = token;
+		res.reply(200, null, user);
 	});
 
 	/**
@@ -172,26 +173,21 @@ module.exports = function(models, controllers, api){
 	 * @apiHeaderExample {form-data} Header-Example:
 	 *   Authorization=Token DEVELOPMENT_TOKEN
 	 */
-	api.post("/user/logout", true, function(req, res, auth){
-		var user_id = auth.user;
+	api.post("/user/logout", true, async function(req, res, auth){
+		var user_id = auth.user_id;
 		var device_notif_type = helper.sanitize(req.body.device_notif_type);
 		var device_notif_id = helper.sanitize(req.body.device_notif_id);
 		// logout user
-		controllers.user.logout(user_id, device_notif_type, device_notif_id, function(err, result){
-			if(err){
-				return res.reply(500, err);
-			}
-			if(!result){
-				return res.reply(404, "Logout gagal. Harap coba lagi");
-			}
-			// logout this user
-			controllers.authentication.logout(auth.token, function(err, val){
-				if(err){
-					return res.reply(500, err);
-				}
-				res.reply(200, null, result);
-			});
-		});
+		var [err, result] = await wrap(controllers.user.logout(user_id, device_notif_type, device_notif_id));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!result) {
+			return res.reply(404, "Logout gagal. Harap coba lagi");
+		}
+		await controllers.authentication.logout(auth.token, user_id);
+		res.reply(200, null, result);
 	});
 
 	/**
@@ -210,17 +206,37 @@ module.exports = function(models, controllers, api){
 	 * @apiHeaderExample {form-data} Header-Example:
 	 *   Authorization=Token DEVELOPMENT_TOKEN
 	 */
-	api.get("/user/profile", true, function(req, res, auth){
-		var user_id = auth.user;
-		controllers.user.findById(user_id, function(err, result){
-			if(err){
-				return res.reply(500, err);
-			}
-			if(!result){
-				return res.reply(404, "user not found");
-			}
-			res.reply(200, null, result);
-		});
+	api.get("/user/profile", true, async function(req, res, auth){
+		var user_id = auth.user_id;
+		var [err, user] = await wrap(controllers.user.findById(user_id));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!user) {
+			return res.reply(404, "user not found");
+		}
+		res.reply(200, null, user);
+	});
+
+	/**
+	 * Author: ope
+	 *
+	 * @api {get} /user/auth_data Get User Authentication Data
+	 * @apiName getUserAuthenticationData
+	 * @apiDescription Get user Authentication Data
+	 * @apiGroup User
+	 * @apiVersion 1.0.0
+	 *
+	 * @apiHeader {String} Authorization User's token
+	 *
+	 * @apiSuccess {Object} data User object
+	 *
+	 * @apiHeaderExample {form-data} Header-Example:
+	 *   Authorization=Token DEVELOPMENT_TOKEN
+	 */
+	api.get("/user/auth_data", async function(req, res, auth){
+		res.reply(200, null, auth);
 	});
 
 	/**
@@ -235,17 +251,17 @@ module.exports = function(models, controllers, api){
 	 * @apiSuccess {Object} data User object
 	 *
 	 */
-	api.get("/user/:id/profile", function(req, res, auth){
+	api.get("/user/:id/profile", async function(req, res, auth){
 		var user_id = helper.sanitize(req.params.id);
-		controllers.user.findById(user_id, function(err, result){
-			if(err){
-				return res.reply(500, err);
-			}
-			if(!result){
-				return res.reply(404, "user not found");
-			}
-			res.reply(200, null, result);
-		});
+		var [err, user] = await wrap(controllers.user.findById(user_id));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if(!user){
+			return res.reply(404, "user not found");
+		}
+		res.reply(200, null, user);
 	});
 
 };

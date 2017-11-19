@@ -2,81 +2,83 @@
 
 var domain = require('domain');
 var _ = require('lodash');
-var uuid = require('node-uuid').v4;
-var logger = require('../libs/logger')('[domain]');
+var uuid = require('uuid/v4');
+var logger = require('../libs/logger')('[HTTP]');
 var running = {};
 
 module.exports = function (req, res, next) {
 
-    if (process.stopping) {
-       res.set('Connection', 'close'); // avoid http Keep-Alive when stopping
-    }
+	if (process.stopping) {
+		res.set('Connection', 'close'); // avoid http Keep-Alive when stopping
+	}
 
-    var time = req.start_time = Date.now(),
-        d = domain.create(),
-        exitDomain = function (done) {
-            d.exit();
-            delete running[d.id];
-            if (done) process.nextTick(done);
-        };
+	var time = req.start_time = Date.now();
+	var d = domain.create();
+	d.id = uuid();
+	d.token = (req.headers.authorization || '').split(' ')[1];
+	d.url = req.url;
 
-    d.id = uuid();
-    d.token = (req.headers.authorization || '').split(' ')[1];
-    req.domain = d;
-    d.add(req);
-    d.add(res);
+	req.domain = d;
+	
+	var exitDomain = function (done) {
+		d.exit();
+		delete running[d.id];
+		if (done) process.nextTick(done);
+	};
 
-    d.on('error', function(err) {
-        try {
-            res.sendStatus(500);
-        } catch (e) {
+	d.add(req);
+	d.add(res);
+	d.enter();	
+	d.on('error', function(err) {
+		try {
+			res.sendStatus(500);
+		} catch (e) {
+			logger.error(e);
+		}
+		logger.error('ERROR', req.method, d.url, (Date.now()-time)+'ms', err.code, err.message ? err.message : err, '\n'+err.stack);
+		exitDomain(function () {
+			process.stopApp();
+		});
+	});
+	
+	running[d.id] = true;
+	logger.info('START', req.method, d.url, req.headers['user-agent']);
 
-        }        
-        logger.error('HTTP',req.method,req.url,req.headers['user-agent'],(Date.now()-time)+'ms','domain error',d.user_id,err.code,err.message ? err.message : err,'\n'+err.stack);
-        exitDomain(function () {
-            process.stopApp();
-        });
-    });
+	res.on('finish', function () {
+		if (res.statusCode < 400) {
+		  logger.info('END', req.method, d.url, res.statusCode, (Date.now()-time)+'ms');
+		} else {
+		  logger.warn('END', req.method, d.url, res.statusCode, (Date.now()-time)+'ms');
+		}
+		exitDomain();
+	});
 
-    res.on('finish', function () {
-        if (res.statusCode<400) {
-          logger.info('HTTP','END',req.method,req.url,req.headers['user-agent'],res.statusCode,(Date.now()-time)+'ms');
-        } else {
-          logger.warn('HTTP','END',req.method,req.url,req.headers['user-agent'],res.statusCode,(Date.now()-time)+'ms');
-        }
-        exitDomain();
-    });
+	res.on('close', function () {
+		logger.warn('END', req.method, d.url, res.statusCode, (Date.now()-time)+'ms', 'connection dropped by the client');
+		exitDomain();
+	});
 
-    res.on('close', function () {
-        logger.warn('HTTP','END',req.method,req.url,req.headers['user-agent'],res.statusCode,(Date.now()-time)+'ms','connection dropped by the client');
-        exitDomain();
-    });
+	next();
 
-    d.enter();
-    running[d.id] = true;
-
-    logger.info('HTTP','START',req.method,req.url,req.headers['user-agent']);
-
-    next();
-
-    process.nextTick(function(){
-        d.exit();
-    });
+	process.nextTick(function(){
+		d.exit();
+	});
 };
 
-var waitRunningDomains = module.exports.waitRunningDomains = function (done,stime) {
-    var  time = stime || Date.now(),
-         ids = _.keys(running);
+var waitRunningDomains = module.exports.waitRunningDomains = function (done, stime) {
+	var time = stime || Date.now();
+	var ids = _.keys(running);
+	var interval_time = 5000;
+	var max_wait_time = 30000; // wait 30 sec otherwise exit anyway
 
-    if (ids.length) {
-        if ((Date.now() - time) < (1 * 60 * 1000)) { // wait 1 min otherwise exit anyway
-            logger.info('waiting for domains to stop', ids);
-            return _.delay(waitRunningDomains,10000,done,time);
-        } else {
-            logger.warn('domains still running after 1min, exiting anyway', ids);
-            done();
-        }
-    } else {
-        done();
-    }
+	if (!ids.length) {
+		return done();
+	}
+	if ((Date.now() - time) < max_wait_time) { 
+		logger.info('waiting for domains to stop', ids);
+		_.delay(waitRunningDomains, interval_time, done, time);
+	} else {
+		logger.warn('domains still running after 30 sec, exiting anyway', ids);
+		done();
+	}
 };
