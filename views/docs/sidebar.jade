@@ -1,0 +1,22 @@
+nav#sidebar
+	div.sidebar-header
+		h4 API List
+
+	ul.list-unstyled.components
+		li
+			a(href="#") 
+				b Introduction
+
+		- _.each(api_list, function(group){
+			li
+				a(href="##{group.group_name}", data-toggle="collapse", aria-expanded="true")
+					b #{group.group_name}
+				ul.list-unstyled.collapse.in(id=group.group_name)
+					- _.each(group.apis, function(api){
+						li
+							a(href="##{api.name}") #{api.title}
+					- });
+		- 	});
+		
+		li
+			a(href="#") About

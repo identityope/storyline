@@ -93,8 +93,6 @@ module.exports = function(mongoose){
 		}]
 	});
 
-	schema.index({_id: 1});
-
 	var Model = mongoose.model(collection, schema);
 
 	/** Enumeration & Constants **/

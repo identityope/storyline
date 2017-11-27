@@ -13,7 +13,9 @@ config.local = function(config_obj){
     config_obj.local = true;
 	config_obj.host = 'http://localhost:5050';
 	config_obj.db_path = 'mongodb://localhost:27017/storyline';
-	config_obj.db_options = {};
+	config_obj.db_options = {
+		"useMongoClient": true // http://thecodebarbarian.com/mongoose-4.11-use-mongo-client.html
+	};
 	config_obj.image_server = 'public/images';
 	config_obj.admin_email = 'taufik@prelo.id';
 	config_obj.redis_host = "localhost";

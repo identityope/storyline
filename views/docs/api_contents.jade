@@ -1,0 +1,106 @@
+- _.each(api_data, function(apis, group_name){
+	div.api-group-header
+		h2 #{group_name} API Group
+
+	- _.each(apis, function(api){
+		div.api-content(id=api.name)
+			h3= api.title
+			div.api-endpoint
+				span.api-type(class=api.type) #{api.type}
+				span.api-url #{api.url}
+				span.api-version v#{api.version}
+			div.api-description
+				| !{api.description}
+			- if (api.header)
+				h4 Header
+				div.table-responsive
+					table.table.table-bordered
+						thead
+							tr
+								th(style="width:30%") Field Name
+								th(style="width:10%") Type
+								th(style="width:70%") Description
+						tbody
+							- for obj in api.header.fields.Header
+								tr
+									td= obj.field
+									td= obj.type
+									td !{obj.description}
+			- if (api.parameter)
+				h4 Parameter
+				div.table-responsive
+					table.table.table-bordered
+						thead
+							tr
+								th(style="width:30%") Field Name
+								th(style="width:10%") Type
+								th(style="width:70%") Description
+						tbody
+							- for obj in api.parameter.fields.Parameter
+								tr
+									td= obj.field
+									td= obj.type
+									td !{obj.description}
+			- if (api.success)
+				h4 Success Response
+				div.table-responsive
+					table.table.table-bordered
+						thead
+							tr
+								th(style="width:30%") Field Name
+								th(style="width:10%") Type
+								th(style="width:70%") Description
+						tbody
+							- for obj in api.success.fields['Success 200']
+								tr
+									td= obj.field
+									td= obj.type
+									td !{obj.description}
+			- if (api.sampleRequest && api.sampleRequest.length > 0)
+				h4 Send Sample Request
+				div.form-horizontal.api-sample-url
+					div.form-group
+						label.control-label.col-sm-2(for="url") URL
+						div.col-sm-8.input-group
+							input.form-control(type="text", name="url", value=api.sampleRequest[0].url)
+							span.input-group-addon #{api.type.toUpperCase()}
+				- if (api.header)
+					div.form-horizontal.api-sample-header
+						- for obj in api.header.fields.Header
+							div.form-group
+								label.control-label.col-sm-2 #{obj.field}
+								div.col-sm-8.input-group
+									- let example = _.find(api.header.examples, o => { return (o.content && o.content.split("=")[0] === obj.field) });
+									- if (example)
+									-	example = example.content.split("=")[1];
+									input.form-control(type="text", name=obj.field, value=example)
+									span.input-group-addon #{obj.type}
+				- if (api.parameter)
+					div.row(style="margin-top: 15px; margin-bottom: 15px")
+						div.col-sm-2
+							b Parameter
+					div.form-horizontal.api-sample-body
+						- for obj in api.parameter.fields.Parameter
+							div.form-group
+								label.control-label.col-sm-2 #{obj.field}
+								div.col-sm-8.input-group
+									input.form-control(type="text", name=obj.field)
+									span.input-group-addon #{obj.type}
+
+				div.form-horizontal.api-sample-submit
+					div.form-group
+						div.col-sm-8.col-sm-offset-2.input-group
+							button.btn.btn-default.submit-button(onclick="sendSampleRequest('#{api.name}', '#{api.type}')") Send
+							button.btn.btn-default.reset-button(onclick="resetSampleRequest('#{api.name}')") Reset
+
+			div.panel.api-sample-response(style="display: none;")
+				div.panel-heading.api-sample-response-header
+					span#heading
+					button.close(type="button", data-dismiss="modal") &times;
+				div.panel-body.api-sample-response-body
+				div.panel-footer.api-sample-response-footer
+
+			div
+				- //pre #{JSON.stringify(api, null, 2)}
+	- });
+- });

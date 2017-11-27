@@ -1,0 +1,12 @@
+extends layout
+
+block main-content
+	include sidebar
+	div#content
+		button.btn.btn-info.navbar-btn#sidebarCollapse(type="button")
+			i.glyphicon.glyphicon-align-left
+			| Toggle Sidebar
+		div#Introduction
+			pre #{JSON.stringify(api_metadata, null, 2)}
+		div
+			include api_contents

@@ -78,7 +78,6 @@ app.use(domain); // domain must be the first middleware
 app.use(compression());
 app.use(favicon(libs.path.join(__dirname, 'public/images', 'favicon.png')));
 app.use(require('stylus').middleware(libs.path.join(__dirname, 'public')));
-app.use(express.static(libs.path.join(__dirname, 'public'), {'maxAge': 86400000*365}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({'extended': false}));
 app.use(cookieParser());
@@ -102,8 +101,8 @@ var api_routes = require('./routes/api')(models, controllers, api_router);
 var web_routes = require('./routes/web')(libs, models, controllers);
 app.use('/api', api_routes);
 app.use('/', web_routes);
-app.use(express.static(libs.path.join(__dirname, 'public')));
-app.use("/docs", express.static(libs.path.join(__dirname, "routes", "documentation")));
+// app.use("/docs", express.static(libs.path.join(__dirname, "routes", "docs")));
+app.use(express.static(libs.path.join(__dirname, 'public'), {'maxAge': 86400000*365}));
 // catch undefined routes to 404 not found error handler **/
 app.use(require('./routes/not_found'));
 
@@ -136,9 +135,9 @@ libs.mongoose.connection.on('connected', function(){
 });
 
 // When db serverConfig on close : https://github.com/Automattic/mongoose/issues/2229
-libs.mongoose.connection.db.serverConfig.on('close', function(){
-	logger.console('mongoose disconnected serverConfig close');
-});
+// libs.mongoose.connection.db.serverConfig.on('close', function(){
+// 	logger.console('mongoose disconnected serverConfig close');
+// });
 
 libs.mongoose.connection.once('open', function(){
 	logger.console('mongoose connection open (once)');
