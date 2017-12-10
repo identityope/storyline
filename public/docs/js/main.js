@@ -40,16 +40,25 @@ function sendSampleRequest(api_id, api_type){
 	var contentType = (api_type === "get") ? "application/x-www-form-urlencoded" : false;
 	var processData = (api_type === "get");
 	var formData = (api_type === "get") ? {} : new FormData();
+	var headers = {};
 	if (api_type === "get") {
-		formData.section = "general";
+		$('#'+api_id+' .api-sample-body input').each(function(){
+			formData[$(this).attr('name')] = $(this).val();
+		});
 	} else {
-		formData.append("section", "general");
+		$('#'+api_id+' .api-sample-body input').each(function(){
+			formData.append($(this).attr('name'), $(this).val());
+		});
 	}
+	$('#'+api_id+' .api-sample-header input').each(function(){
+		headers[$(this).attr('name')] = $(this).val();
+	});
 	var start_time = Date.now();
 	// formData.append('action', 'previewImg');
 	$.ajax({
 		type: api_type,
 		url: url,
+		headers: headers,
 		data: formData,
 		contentType: contentType,
 		processData: processData,

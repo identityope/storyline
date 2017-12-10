@@ -53,45 +53,56 @@
 						tbody
 							- for obj in api.success.fields['Success 200']
 								tr
-									td= obj.field
+									- if (obj.field.indexOf('.') === -1) {
+										td= obj.field
+									- } else { 
+									-	var fields = obj.field.split('.');
+									-	var pad = 20*(fields.length-2);
+										td 
+											span(style="padding-left: #{pad}px") └ &nbsp; #{fields[fields.length-1]} 
+									- }
 									td= obj.type
 									td !{obj.description}
 			- if (api.sampleRequest && api.sampleRequest.length > 0)
 				h4 Send Sample Request
-				div.form-horizontal.api-sample-url
-					div.form-group
-						label.control-label.col-sm-2(for="url") URL
-						div.col-sm-8.input-group
-							input.form-control(type="text", name="url", value=api.sampleRequest[0].url)
-							span.input-group-addon #{api.type.toUpperCase()}
-				- if (api.header)
-					div.form-horizontal.api-sample-header
-						- for obj in api.header.fields.Header
-							div.form-group
-								label.control-label.col-sm-2 #{obj.field}
-								div.col-sm-8.input-group
-									- let example = _.find(api.header.examples, o => { return (o.content && o.content.split("=")[0] === obj.field) });
-									- if (example)
-									-	example = example.content.split("=")[1];
-									input.form-control(type="text", name=obj.field, value=example)
-									span.input-group-addon #{obj.type}
-				- if (api.parameter)
-					div.row(style="margin-top: 15px; margin-bottom: 15px")
-						div.col-sm-2
-							b Parameter
-					div.form-horizontal.api-sample-body
-						- for obj in api.parameter.fields.Parameter
-							div.form-group
-								label.control-label.col-sm-2 #{obj.field}
-								div.col-sm-8.input-group
-									input.form-control(type="text", name=obj.field)
-									span.input-group-addon #{obj.type}
+				form(onsubmit="sendSampleRequest('#{api.name}', '#{api.type}'); return false;")
+					div.form-horizontal.api-sample-url
+						div.form-group
+							label.control-label.col-sm-2(for="url") URL
+							div.col-sm-8.input-group
+								input.form-control(type="text", name="url", value=api.sampleRequest[0].url)
+								span.input-group-addon #{api.type.toUpperCase()}
+					- if (api.header)
+						div.form-horizontal.api-sample-header
+							- for obj in api.header.fields.Header
+								div.form-group
+									label.control-label.col-sm-2 #{obj.field}
+									div.col-sm-8.input-group
+										- let example = _.find(api.header.examples, o => { return (o.content && o.content.split("=")[0] === obj.field) });
+										- if (example) example = example.content.split("=")[1];
+										input.form-control(type="text", name=obj.field, value=example)
+										span.input-group-addon #{obj.type}
+					- if (api.parameter)
+						div.row(style="margin-top: 15px; margin-bottom: 15px")
+							div.col-sm-2
+								b Parameter
+						div.form-horizontal.api-sample-body
+							- for obj in api.parameter.fields.Parameter
+								div.form-group
+									label.control-label.col-sm-2 #{obj.field}
+									div.col-sm-8.input-group
+										- if (obj.type === "Password")
+											input.form-control(type="password", name=obj.field)
+										- else
+											input.form-control(type="text", name=obj.field)
 
-				div.form-horizontal.api-sample-submit
-					div.form-group
-						div.col-sm-8.col-sm-offset-2.input-group
-							button.btn.btn-default.submit-button(onclick="sendSampleRequest('#{api.name}', '#{api.type}')") Send
-							button.btn.btn-default.reset-button(onclick="resetSampleRequest('#{api.name}')") Reset
+										span.input-group-addon #{obj.type}
+
+					div.form-horizontal.api-sample-submit
+						div.form-group
+							div.col-sm-8.col-sm-offset-2.input-group
+								input.btn.btn-default.submit-button(type="submit", value="Send")
+								span.btn.btn-default.reset-button(onclick="resetSampleRequest('#{api.name}')") Reset
 
 			div.panel.api-sample-response(style="display: none;")
 				div.panel-heading.api-sample-response-header

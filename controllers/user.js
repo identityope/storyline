@@ -7,9 +7,6 @@ module.exports = function(libs, models) {
 	var controller = {};
 
 	function formatUserData(user){
-		if(!user){
-			return {};
-		}
 		var user_data = {
 			"_id": user._id,
 			"username": user.username,
@@ -17,11 +14,11 @@ module.exports = function(libs, models) {
 			"account_status": user.account_status,
 			"profile": user.profile,
 			"age": user.profile.birthdate ? libs.moment().diff(user.profile.birthdate, "years") : null,
-			"last_seen": libs.moment(user.data.last_seen).fromNow(),
-			"app_version": user.data.app_version,
-			"total_stories": user.data.total_stories,
-			"total_followers": user.data.total_followers,
-			"total_followings": user.data.total_followings
+			"last_seen": libs.moment(user.details.last_seen).fromNow(),
+			"app_version": user.details.app_version,
+			"total_stories": user.details.total_stories,
+			"total_followers": user.details.total_followers,
+			"total_followings": user.details.total_followings
 		};
 		user_data.profile.photo_raw = user_data.profile.photo;
 		user_data.profile.photo = helper.getUserPhotoURL(user_data._id, user_data.profile.photo);
@@ -50,9 +47,12 @@ module.exports = function(libs, models) {
 			"email": email,
 			"email_lowercase": email.toLowerCase(),
 			"password": hashed_password,
-			"profile": {},
+			"profile": {
+				"photo": "../default.png",
+				"cover_photo": "../default.png"
+			},
 			"keywords": helper.buildKeywords([username, email.split("@")[0]]),
-			"data": {
+			"details": {
 				"registration_date": today,
 				"registration_platform": platform,
 				"registration_device": registration_device,
@@ -70,6 +70,8 @@ module.exports = function(libs, models) {
 			}]
 		};
 		user = await models.users.create(user_obj);
+		if (!user) throw "Failed to register a new user";
+
 		return formatUserData(user);
 	};
 

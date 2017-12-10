@@ -10,16 +10,17 @@ module.exports = function(libs){
 		return obj.toObject(); 
 	};
 
-	// return unique words from text
-	helper.breakupWords = function(text){
-		var delimiters = /[\s_.,'"+:?!@#^*()\[\]\-]+/;
-		var words = text.toLowerCase().split(delimiters).filter(function(str){ return !!str; });
-		return Array.from(new Set(words));
-	};
-
 	// return array of [error, value] from resolved/rejected promise
 	helper.wrapPromise = function(promise){
 		return promise.then(data => [null, data]).catch(err => [err]);
+	};
+
+	// return unique words from text
+	helper.breakupWords = function(text){
+		if (!text) return;
+		var delimiters = /[\s_.,'"+:?!@#^*()\[\]\-]+/;
+		var words = text.toLowerCase().split(delimiters).filter(str => !!str);
+		return Array.from(new Set(words));
 	};
 
 	// build keywords for search
@@ -70,20 +71,6 @@ module.exports = function(libs){
 		}
 
 		return phone;
-	};
-
-	// hashing password
-	helper.hashPassword = function(password, salt){
-		return libs.crypto.createHash('sha512').update(password + salt).digest('hex');
-	};
-
-	// create custom error object
-	helper.createErrorObject = function(status_code, message, data){
-		return {
-			"status_code": status_code,
-			"message": message,
-			"data": data
-		};
 	};
 
 	/** Image helper functions **/

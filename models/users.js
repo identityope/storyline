@@ -31,7 +31,7 @@ module.exports = function(mongoose){
 			additional_info: {}
 		},
 		keywords: [String],
-		data: {
+		details: {
 			registration_date: Date,
 			registration_platform: String,
 			registration_device: { // for mobile app
@@ -165,11 +165,11 @@ module.exports = function(mongoose){
 		var today = new Date();
 		var query = {"_id": user_id};
 		var update = {"$set": {
-			"data.app_version": app_version,
-			"data.last_login": today,
-			"data.last_seen": today
+			"details.app_version": app_version,
+			"details.last_login": today,
+			"details.last_seen": today
 		}, "$addToSet": {
-			"data.advertising_ids": advertising_obj,
+			"details.advertising_ids": advertising_obj,
 			"online_devices": online_device_obj
 		}};
 		// update data
@@ -181,7 +181,7 @@ module.exports = function(mongoose){
 		var today = new Date();
 		var query = {"_id": user_id};
 		var update = {"$set": {
-			"data.last_seen": today
+			"details.last_seen": today
 		}, "$pull": {
 			"online_devices": {"device_notif_type": device_notif_type, "device_notif_id": device_notif_id}
 		}};

@@ -14,7 +14,7 @@ var bodyParser = require('body-parser');
 var compression = require('compression');
 var cookieParser = require('cookie-parser');
 var debug = require('debug')('storyline:server');
-var domain = require('./libs/domain_middleware');
+var domain = require('./middlewares/domain');
 var escapeStringRegexp = require('escape-string-regexp');
 var favicon = require('serve-favicon');
 var multer = require('multer');
@@ -61,11 +61,13 @@ global.wrap = helper.wrapPromise;
 
 /** Include models **/
 var models = {};
+models.stories = require('./models/stories')(libs.mongoose);
 models.users = require('./models/users')(libs.mongoose);
 
 /** Include controllers **/
 var controllers = {};
 controllers.authentication = require('./controllers/authentication')(libs); // basic authentication with Redis
+controllers.story = require('./controllers/story')(libs, models);
 controllers.user = require('./controllers/user')(libs, models);
 
 /** Setup application **/

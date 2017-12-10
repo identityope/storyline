@@ -5,6 +5,16 @@ const log = rootRequire("libs/logger")('[user]');
 module.exports = function(models, controllers, api){
 
 	/**
+	 * @apiDefine ResponseError4xx
+	 * @apiError {String} message The <code>id</code> of the User was not found.
+	 */
+
+	 /**
+	 * @apiDefine ResponseError500
+	 * @apiError (Error 500) {String} message Something happened on the server.
+	 */
+
+	/**
 	 * Author: ope
 	 *
 	 * @api {post} /user/register Register New User
@@ -107,6 +117,11 @@ module.exports = function(models, controllers, api){
 	 * @apiParam {String} advertising_id User's app advertising ID
 	 *
 	 * @apiSuccess {Object} data User object
+	 * @apiSuccess {String} data.username Username of user
+	 * @apiSuccess {String} data.email Email of user
+	 *
+	 * @apiUse ResponseError4xx
+	 * @apiUse ResponseError500
 	 *
 	 */
 	api.post("/user/login", false, async function(req, res, auth){

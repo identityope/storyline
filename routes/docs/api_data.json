@@ -1,5 +1,154 @@
 [
   {
+    "type": "post",
+    "url": "/story/new",
+    "title": "Create New Story",
+    "name": "createNewStory",
+    "description": "<p>Create a New Story</p>",
+    "group": "Story",
+    "version": "1.0.0",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>User's token</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "title",
+            "description": "<p>Title of the story (optional)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "content",
+            "description": "<p>Whatever story you want to tell</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Result object</p>"
+          }
+        ]
+      }
+    },
+    "filename": "routes/api/story.js",
+    "groupTitle": "Story",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:5050/api/story/new"
+      }
+    ]
+  },
+  {
+    "type": "get",
+    "url": "/story/:story_id",
+    "title": "Get Story by ID",
+    "name": "getStoryByID",
+    "description": "<p>Get Story by ID</p>",
+    "group": "Story",
+    "version": "1.0.0",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Result object</p>"
+          }
+        ]
+      }
+    },
+    "filename": "routes/api/story.js",
+    "groupTitle": "Story",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:5050/api/story/:story_id"
+      }
+    ]
+  },
+  {
+    "type": "get",
+    "url": "/story/permalink/:permalink",
+    "title": "Get Story by Permalink",
+    "name": "getStoryByPermalink",
+    "description": "<p>Get Story by Permalink</p>",
+    "group": "Story",
+    "version": "1.0.0",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Result object</p>"
+          }
+        ]
+      }
+    },
+    "filename": "routes/api/story.js",
+    "groupTitle": "Story",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:5050/api/story/permalink/:permalink"
+      }
+    ]
+  },
+  {
+    "type": "get",
+    "url": "/test/user_tokens/:user_id",
+    "title": "Get User Tokens by ID",
+    "name": "GetUserTokensbyID",
+    "description": "<p>Get User Tokens by ID</p>",
+    "group": "Test",
+    "version": "1.0.0",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Result object</p>"
+          }
+        ]
+      }
+    },
+    "filename": "routes/api/test.js",
+    "groupTitle": "Test",
+    "sampleRequest": [
+      {
+        "url": "http://localhost:5050/api/test/user_tokens/:user_id"
+      }
+    ]
+  },
+  {
     "type": "get",
     "url": "/test/check",
     "title": "Check API",
@@ -241,6 +390,20 @@
             "optional": false,
             "field": "data",
             "description": "<p>User object</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "data.username",
+            "description": "<p>Username of user</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "data.email",
+            "description": "<p>Email of user</p>"
           }
         ]
       }
@@ -251,7 +414,29 @@
       {
         "url": "http://localhost:5050/api/user/login"
       }
-    ]
+    ],
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>The <code>id</code> of the User was not found.</p>"
+          }
+        ],
+        "Error 500": [
+          {
+            "group": "Error 500",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Something happened on the server.</p>"
+          }
+        ]
+      }
+    }
   },
   {
     "type": "post",

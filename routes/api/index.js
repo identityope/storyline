@@ -10,7 +10,8 @@ module.exports = function(models, controllers, api){
 
 	/* subroutes */
 	var test = require("./test")(models, controllers, api);
-	var search = require("./user")(models, controllers, api);
+	var story = require("./story")(models, controllers, api);
+	var user = require("./user")(models, controllers, api);
 
 	return api.Router();
 };
