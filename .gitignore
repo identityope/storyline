@@ -1,6 +1,6 @@
 node_modules/
 logs/
-routes/documentation/
+routes/docs/
 tmp/
 
 secrets.js
