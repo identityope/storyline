@@ -103,7 +103,7 @@ var api_routes = require('./routes/api')(models, controllers, api_router);
 var web_routes = require('./routes/web')(libs, models, controllers);
 app.use('/api', api_routes);
 app.use('/', web_routes);
-// app.use("/docs", express.static(libs.path.join(__dirname, "routes", "docs")));
+app.use("/docs", express.static(libs.path.join(__dirname, "routes", "docs")));
 app.use(express.static(libs.path.join(__dirname, 'public'), {'maxAge': 86400000*365}));
 // catch undefined routes to 404 not found error handler **/
 app.use(require('./routes/not_found'));

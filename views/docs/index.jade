@@ -3,10 +3,14 @@ extends layout
 block main-content
 	include sidebar
 	div#content
-		button.btn.btn-info.navbar-btn#sidebarCollapse(type="button")
-			i.glyphicon.glyphicon-align-left
-			| Toggle Sidebar
 		div#Introduction
-			pre #{JSON.stringify(api_metadata, null, 2)}
+			div.api-group-header
+				h2 Storyline API v#{api_metadata.version}
+			div.api-content
+				div.api-description
+					| Storyline is a mobile, desktop, and internet-based story sharing application that allows users to share stories, pictures, videos, and more either publicly or privately to their followers. It also has many special features like post a story anonymously, makes story only available for a certain time, explore location-based public stories, and more with additional achievement list so you can enjoy using Storyline in a gamification way.
+					br
+					br
+					| This documentation page is made so that developers can learn, review, and test Storyline APIs used by client apps.
 		div
 			include api_contents

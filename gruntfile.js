@@ -26,7 +26,7 @@ module.exports = function(grunt){
       myapp: {
         src: "routes/api",
         dest: "routes/docs",
-        // template: "templates/docs", // use custom template in views/docs
+        template: "templates/docs",
         options: {
           includeFilters: [".*\\.js$"],
           excludeFilters: ["node_modules/"]

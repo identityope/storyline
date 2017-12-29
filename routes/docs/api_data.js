@@ -36,6 +36,13 @@ define({ "api": [
             "optional": false,
             "field": "content",
             "description": "<p>Whatever story you want to tell</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "category_id",
+            "description": "<p>Category ID of the story (optional)</p>"
           }
         ]
       }

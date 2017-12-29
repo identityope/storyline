@@ -1,8 +1,5 @@
 node_modules/
-public/images/
 logs/
-static/
-dump/
 routes/documentation/
 tmp/
 

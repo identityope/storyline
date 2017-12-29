@@ -4,6 +4,7 @@ html
 		title Storyline API Documentation Page
 
 		link(rel='stylesheet', href='/docs/css/bootstrap.min.css')
+		link(rel='stylesheet', href='/docs/css/font-awesome.min.css')
 		link(rel='stylesheet', href='/docs/css/jquery.mCustomScrollbar.min.css')
 		link(rel='stylesheet', href='/docs/css/style.css')
 		script(src='/docs/js/jquery.min.js')
@@ -15,6 +16,8 @@ html
 		nav.navbar.navbar-inverse.navbar-fixed-top
 			div.container-fluid
 				div.navbar-header
+					button.btn.btn-link.navbar-btn#sidebarCollapse(type="button")
+						i.fa.fa-bars
 					a.navbar-brand(href="#") #{api_metadata.title}
 				ul.nav.navbar-nav.navbar-right 
 					li 
