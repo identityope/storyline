@@ -2,7 +2,7 @@
   "name": "storyline",
   "version": "1.0.0",
   "private": true,
-  "description": "Storyline is a mobile, desktop, and internet-based story sharing application that allows users to share stories, pictures, videos, and more either publicly or privately to their followers.",
+  "description": "Storyline is a mobile, desktop, and internet-based story-sharing application that allows users to share stories, photos, videos, and more either publicly or privately to their followers.",
   "scripts": {
     "local": "nodemon ./bin/www local",
     "test": "echo \"Error: no test specified\" && exit 1"
