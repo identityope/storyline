@@ -14,7 +14,7 @@ nav#sidebar
 		- _.each(api_list, function(group){
 			li
 				a(href="##{group.group_name}", data-toggle="collapse", aria-expanded="true")
-					b #{group.group_name}
+					b #{_.startCase(group.group_name)}
 				ul.list-unstyled.collapse.in(id=group.group_name)
 					- _.each(group.apis, function(api){
 						li

@@ -1,6 +1,6 @@
 - _.each(api_data, function(apis, group_name){
 	div.api-group-header
-		h2 #{group_name} API Group
+		h2 #{_.startCase(group_name)} API Group
 
 	- _.each(apis, function(api){
 		div.api-content(id=api.name)
