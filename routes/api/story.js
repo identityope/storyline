@@ -2,7 +2,7 @@
 
 const log = rootRequire("libs/logger")('[story]');
 
-module.exports = function(models, controllers, api){
+module.exports = function(libs, models, controllers, api){
 
 	/**
 	 * Author: ope

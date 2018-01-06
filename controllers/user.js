@@ -2,6 +2,8 @@
 
 const log = rootRequire("libs/logger")('[user]');
 const SALT_ROUNDS = 11; // ~5 hashes/second
+const FOLLOWER_PREFIX = "FOLLOWER";
+const FOLLOWING_PREFIX = "FOLLOWING";
 
 module.exports = function(libs, models) {
 	var controller = {};
@@ -97,6 +99,68 @@ module.exports = function(libs, models) {
 		var user = await models.users.findById(user_id);
 		if (!user) return;
 		return formatUserData(user);
+	};
+
+	controller.followUserById = async function(user_id, following_id){
+		// create user's relation in db
+		var now = new Date();
+		var obj = {
+			following_id: following_id,
+			follower_id: user_id,
+			follow_date: now,
+			last_interaction: null,
+			closeness: 0
+		};
+		var relation = await models.user_relations.create(obj);
+		if (!relation) return;
+
+		// create user relation in redis
+		var add_redis_following = libs.redisClient.zaddAsync(`${FOLLOWING_PREFIX}:${user_id}`, now.getTime(), following_id);
+		var add_redis_follower = libs.redisClient.zaddAsync(`${FOLLOWER_PREFIX}:${following_id}`, now.getTime(), user_id);
+		// process updates in parallel
+		[add_redis_following, add_redis_follower] = await Promise.all([add_redis_following, add_redis_follower]);
+		// check and increase total follower and following of related user
+		var update_following = (add_redis_following > 0) ? models.users.updateById(user_id, {"$inc": {"details.total_followings": 1}}) : Promise.resolve();
+		var update_follower = (add_redis_follower > 0) ? models.users.updateById(following_id, {"$inc": {"details.total_followers": 1}}) : Promise.resolve();
+		var result = await Promise.all([update_following, update_follower]);
+
+		return relation;
+	};
+
+	controller.findFollowersWithPagination = async function(following_id, offset, limit){
+		// get followers relation
+		var relations = await models.user_relations.findFollowersWithPagination(following_id, offset, limit);
+		if (!relations.length) return [];
+
+		// format follower data
+		await Promise.map(relations, async function(relation){
+			var user = await models.users.findById(relation.follower_id, {"username": 1, "profile.photo": 1});
+			if (!user) return;
+
+			relation.follower_username = user.username;
+			relation.follower_photo = helper.getUserPhotoURL(user._id, user.profile.photo);
+			relation.follow_since = libs.moment(relation.follow_date).fromNow();
+		});
+
+		return relations;
+	};
+
+	controller.findFollowingsWithPagination = async function(follower_id, offset, limit){
+		// get followers relation
+		var relations = await models.user_relations.findFollowingsWithPagination(follower_id, offset, limit);
+		if (!relations.length) return [];
+
+		// format follower data
+		await Promise.map(relations, async function(relation){
+			var user = await models.users.findById(relation.following_id, {"username": 1, "profile.photo": 1});
+			if (!user) return;
+
+			relation.following_username = user.username;
+			relation.following_photo = helper.getUserPhotoURL(user._id, user.profile.photo);
+			relation.follow_since = libs.moment(relation.follow_date).fromNow();
+		});
+
+		return relations;
 	};
 
 	return controller;

@@ -2,16 +2,16 @@
 
 // author: ope
 // api is the same object returned by the api_router
-module.exports = function(models, controllers, api){
+module.exports = function(libs, models, controllers, api){
 
 	api.get('/', function(req, res, auth) {
 		res.reply(200, null, "Hello! This is API test page for Storyline Application.");
 	});
 
 	/* subroutes */
-	var test = require("./test")(models, controllers, api);
-	var story = require("./story")(models, controllers, api);
-	var user = require("./user")(models, controllers, api);
+	var test = require("./test")(libs, models, controllers, api);
+	var story = require("./story")(libs, models, controllers, api);
+	var user = require("./user")(libs, models, controllers, api);
 
 	return api.Router();
 };

@@ -70,26 +70,6 @@ module.exports = function(mongoose){
 			device_model: String,
 			device_notif_type: String,
 			device_notif_id: String
-		}],
-		followings: [{
-			_id: false,
-			user_id: ObjectId,
-			username: String,
-			fullname: String,
-			user_photo: String,
-			since: Date,
-			closeness: Number,
-			last_interaction: Date
-		}],
-		followers: [{
-			_id: false,
-			user_id: ObjectId,
-			username: String,
-			fullname: String,
-			user_photo: String,
-			since: Date,
-			closeness: Number,
-			last_interaction: Date
 		}]
 	});
 
@@ -157,7 +137,7 @@ module.exports = function(mongoose){
 
 	/** Update functions **/
 	Model.updateById = async function(user_id, update_obj){
-		var result = await Model.update({"_id": user_id}, update_obj, {"multi": false}).exec();
+		var result = await Model.update({"_id": user_id}, update_obj).exec();
 		return result ? (result.n > 0) : null;
 	};
 

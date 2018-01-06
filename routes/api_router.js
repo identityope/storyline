@@ -54,7 +54,7 @@ module.exports = function(authenticator){
 		// if using token scheme
 		var token = authorization[1];
 		if (!config.production && token === "DEVELOPMENT_TOKEN") { // authentication with development token
-			auth_data.user_id = "56382fb877719d215d3e47d9"; // test user ID
+			auth_data.user_id = "5a4ba9494f4e711e08c80a43"; // test user ID
 			auth_data.token = token;
 			return auth_data;
 		}

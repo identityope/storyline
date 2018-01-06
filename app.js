@@ -63,6 +63,7 @@ global.wrap = helper.wrapPromise;
 var models = {};
 models.stories = require('./models/stories')(libs.mongoose);
 models.users = require('./models/users')(libs.mongoose);
+models.user_relations = require('./models/user_relations')(libs.mongoose);
 
 /** Include controllers **/
 var controllers = {};
@@ -99,7 +100,7 @@ app.use(multer({storage: storage}).single('image'));
 
 /** Load web & api routes **/
 var api_router = require('./routes/api_router')(controllers.authentication);
-var api_routes = require('./routes/api')(models, controllers, api_router);
+var api_routes = require('./routes/api')(libs, models, controllers, api_router);
 var web_routes = require('./routes/web')(libs, models, controllers);
 app.use('/api', api_routes);
 app.use('/', web_routes);

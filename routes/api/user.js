@@ -2,7 +2,7 @@
 
 const log = rootRequire("libs/logger")('[user]');
 
-module.exports = function(models, controllers, api){
+module.exports = function(libs, models, controllers, api){
 
 	/**
 	 * @apiDefine ResponseError4xx
@@ -274,6 +274,110 @@ module.exports = function(models, controllers, api){
 			return res.replyError(err);
 		}
 		if(!user){
+			return res.reply(404, "user not found");
+		}
+		res.reply(200, null, user);
+	});
+
+	/**
+	 * Author: ope
+	 *
+	 * @api {post} /user/follow Follow User
+	 * @apiName followUser
+	 * @apiDescription Create user relation so that authenticated user will follow another user with following_id
+	 * @apiGroup User
+	 * @apiVersion 1.0.0
+	 *
+	 * @apiHeader {String} Authorization User's token
+	 *
+	 * @apiParam {String} following_id User ID to be followed
+	 *
+	 * @apiSuccess {Object} data User object
+	 *
+	 * @apiHeaderExample {form-data} Header-Example:
+	 *   Authorization=Token DEVELOPMENT_TOKEN
+	 */
+	api.post("/user/follow", true, async function(req, res, auth){
+		var user_id = auth.user_id;
+		var following_id = helper.sanitize(req.body.following_id);
+		if (user_id === following_id) {
+			return res.replyError("Kamu tidak bisa mem-follow akun kamu sendiri");
+		}
+		// process follow user
+		var [err, result] = await wrap(controllers.user.followUserById(user_id, following_id));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!result) {
+			return res.reply(404, "Following user failed.");
+		}
+		res.reply(200, null, result);
+	});
+
+	/**
+	 * Author: ope
+	 *
+	 * @api {get} /user/followers Get User's Followers
+	 * @apiName getUsersFollowers
+	 * @apiDescription Get user's followers data.
+	 * @apiGroup User
+	 * @apiVersion 1.0.0
+	 *
+	 * @apiHeader {String} Authorization User's token
+	 *
+	 * @apiParam {Number} offset Offset for pagination
+	 * @apiParam {Number} limit Limit result for pagination, default to 50
+	 *
+	 * @apiSuccess {Object} data User object
+	 *
+	 * @apiHeaderExample {form-data} Header-Example:
+	 *   Authorization=Token DEVELOPMENT_TOKEN
+	 */
+	api.get("/user/followers", true, async function(req, res, auth){
+		var user_id = auth.user_id;
+		var offset = parseInt(req.body.offset) || 0;
+		var limit = parseInt(req.body.limit) || 50;
+		var [err, user] = await wrap(controllers.user.findFollowersWithPagination(user_id, offset, limit));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!user) {
+			return res.reply(404, "user not found");
+		}
+		res.reply(200, null, user);
+	});
+
+	/**
+	 * Author: ope
+	 *
+	 * @api {get} /user/followings Get User's Followings
+	 * @apiName getUsersFollowings
+	 * @apiDescription Get user's followings data.
+	 * @apiGroup User
+	 * @apiVersion 1.0.0
+	 *
+	 * @apiHeader {String} Authorization User's token
+	 *
+	 * @apiParam {Number} offset Offset for pagination
+	 * @apiParam {Number} limit Limit result for pagination, default to 50
+	 *
+	 * @apiSuccess {Object} data User object
+	 *
+	 * @apiHeaderExample {form-data} Header-Example:
+	 *   Authorization=Token DEVELOPMENT_TOKEN
+	 */
+	api.get("/user/followings", true, async function(req, res, auth){
+		var user_id = auth.user_id;
+		var offset = parseInt(req.body.offset) || 0;
+		var limit = parseInt(req.body.limit) || 50;
+		var [err, user] = await wrap(controllers.user.findFollowingsWithPagination(user_id, offset, limit));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!user) {
 			return res.reply(404, "user not found");
 		}
 		res.reply(200, null, user);
