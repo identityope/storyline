@@ -9,7 +9,7 @@ module.exports = function(mongoose){
 		_id: ObjectId,
 		following_id: ObjectId,
 		follower_id: ObjectId,
-		follow_date: Date,
+		follow_time: Date,
 		last_interaction: Date,
 		closeness: Number
 	});
@@ -36,22 +36,22 @@ module.exports = function(mongoose){
 	};
 
 	Model.findAllFollowers = async function(following_id, projection = default_projection){
-		var followers = await Model.find({following_id}, projection, {"sort": {"follow_date": -1}}).exec();
+		var followers = await Model.find({following_id}, projection, {"sort": {"follow_time": -1}}).exec();
 		return followers ? followers.map(helper.mapObjects) : null;
 	};
 
 	Model.findAllFollowings = async function(follower_id, projection = default_projection){
-		var followings = await Model.find({follower_id}, projection, {"sort": {"follow_date": -1}}).exec();
+		var followings = await Model.find({follower_id}, projection, {"sort": {"follow_time": -1}}).exec();
 		return followings ? followings.map(helper.mapObjects) : null;
 	};
 
 	Model.findFollowersWithPagination = async function(following_id, skip, limit, projection = default_projection){
-		var followers = await Model.find({following_id}, projection, {"sort": {"follow_date": -1}, skip, limit}).exec();
+		var followers = await Model.find({following_id}, projection, {"sort": {"follow_time": -1}, skip, limit}).exec();
 		return followers ? followers.map(helper.mapObjects) : null;
 	};
 
 	Model.findFollowingsWithPagination = async function(follower_id, skip, limit, projection = default_projection){
-		var followings = await Model.find({follower_id}, projection, {"sort": {"follow_date": -1}, skip, limit}).exec();
+		var followings = await Model.find({follower_id}, projection, {"sort": {"follow_time": -1}, skip, limit}).exec();
 		return followings ? followings.map(helper.mapObjects) : null;
 	};
 

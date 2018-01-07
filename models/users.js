@@ -32,7 +32,7 @@ module.exports = function(mongoose){
 		},
 		keywords: [String],
 		details: {
-			registration_date: Date,
+			registration_time: Date,
 			registration_platform: String,
 			registration_device: { // for mobile app
 				device_id: String,
@@ -62,7 +62,7 @@ module.exports = function(mongoose){
 			last_sent_sms: Date,
 			total_sent_sms: Number,
 			reset_password_code: String,
-			reset_password_date: Date
+			reset_password_time: Date
 		},
 		online_devices: [{
 			_id: false,

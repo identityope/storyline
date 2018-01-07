@@ -27,7 +27,7 @@ module.exports = function(libs, models) {
 			"permalink": libs.shortId.generate(),
 			"category_id": details.category_id,
 			"category_name": details.category_name,
-			"created_date": new Date(),
+			"created_time": new Date(),
 			"created_time_uuid": new libs.timeUUID(), 
 			"keywords": helper.buildKeywords([title, user.username, details.category_name])
 		};

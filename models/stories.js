@@ -16,8 +16,8 @@ module.exports = function(mongoose){
 		permalink: String,
 		category_id: ObjectId,
 		category_name: String,
-		created_date: Date,
-		updated_date: Date,
+		created_time: Date,
+		updated_time: Date,
 		created_time_uuid: String, 
 		keywords: [String],
 		details: {

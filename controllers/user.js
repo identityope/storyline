@@ -55,7 +55,7 @@ module.exports = function(libs, models) {
 			},
 			"keywords": helper.buildKeywords([username, email.split("@")[0]]),
 			"details": {
-				"registration_date": today,
+				"registration_time": today,
 				"registration_platform": platform,
 				"registration_device": registration_device,
 				"app_version": app_version,
@@ -107,7 +107,7 @@ module.exports = function(libs, models) {
 		var obj = {
 			following_id: following_id,
 			follower_id: user_id,
-			follow_date: now,
+			follow_time: now,
 			last_interaction: null,
 			closeness: 0
 		};
@@ -156,7 +156,7 @@ module.exports = function(libs, models) {
 
 			relation.follower_username = user.username;
 			relation.follower_photo = helper.getUserPhotoURL(user._id, user.profile.photo);
-			relation.follow_since = libs.moment(relation.follow_date).fromNow();
+			relation.follow_since = libs.moment(relation.follow_time).fromNow();
 		});
 
 		return relations;
@@ -174,7 +174,7 @@ module.exports = function(libs, models) {
 
 			relation.following_username = user.username;
 			relation.following_photo = helper.getUserPhotoURL(user._id, user.profile.photo);
-			relation.follow_since = libs.moment(relation.follow_date).fromNow();
+			relation.follow_since = libs.moment(relation.follow_time).fromNow();
 		});
 
 		return relations;
