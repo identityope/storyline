@@ -2,8 +2,8 @@
 
 const log = rootRequire("libs/logger")('[user]');
 const SALT_ROUNDS = 11; // ~5 hashes/second
-const FOLLOWER_PREFIX = "FOLLOWER";
-const FOLLOWING_PREFIX = "FOLLOWING";
+const FOLLOWER_PREFIX = "SL_FOLLOWERS";
+const FOLLOWING_PREFIX = "SL_FOLLOWINGS";
 
 module.exports = function(libs, models) {
 	var controller = {};
@@ -125,6 +125,23 @@ module.exports = function(libs, models) {
 		var result = await Promise.all([update_following, update_follower]);
 
 		return relation;
+	};
+
+	controller.unfollowUserById = async function(user_id, following_id){
+		// remove user's relation in db
+		var now = new Date();
+		var res = await models.user_relations.deleteByUserId(following_id, user_id);
+		if (!res) return;
+
+		// remove user relation from redis
+		var rem_redis_following = libs.redisClient.zremAsync(`${FOLLOWING_PREFIX}:${user_id}`, following_id);
+		var rem_redis_follower = libs.redisClient.zremAsync(`${FOLLOWER_PREFIX}:${following_id}`, user_id);
+		var update_following = models.users.updateById(user_id, {"$inc": {"details.total_followings": -1}});
+		var update_follower = models.users.updateById(following_id, {"$inc": {"details.total_followers": -1}});
+		// process updates in parallel
+		var result = await Promise.all([rem_redis_following, rem_redis_follower, update_following, update_follower]);
+
+		return res;
 	};
 
 	controller.findFollowersWithPagination = async function(following_id, offset, limit){

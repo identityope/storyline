@@ -1,7 +1,5 @@
 "use strict";
 
-const FOLLOWER_PREFIX = "FOLLOWER";
-
 module.exports = function(libs, models, controllers, api){
 
 	/**
@@ -95,7 +93,7 @@ module.exports = function(libs, models, controllers, api){
 		} else if (type === "set") {
 			[err, result] = await wrap(libs.redisClient.smembersAsync(`${key}`));
 		} else if (type === "sorted set") {
-			[err, result] = await wrap(libs.redisClient.zrangeAsync(`${key}`, 0, -1));
+			[err, result] = await wrap(libs.redisClient.zrevrangeAsync(`${key}`, 0, -1));
 		} else {
 			[err, result] = await wrap(libs.redisClient.getAsync(`${key}`));
 		}
@@ -147,28 +145,6 @@ module.exports = function(libs, models, controllers, api){
 	api.get("/redis/user_tokens/:user_id", async function(req, res, auth){
 		var user_id = helper.sanitize(req.params.user_id);
 		var [err, result] = await wrap(controllers.authentication.getTokensByUserId(user_id));
-		if (err) {
-			logger.error(err);
-			return res.replyError(err);
-		}
-		res.reply(200, null, result);
-	});
-
-	/**
-	 * Author: ope
-	 *
-	 * @api {get} /redis/user_followers/:user_id Get User's Followers by ID
-	 * @apiName GetUserFollowersbyID
-	 * @apiDescription Get User's Followers by ID
-	 * @apiGroup _Redis Functions
-	 * @apiVersion 1.0.0
-	 *
-	 * @apiSuccess {Object} data Result object
-	 *
-	 */
-	api.get("/redis/user_followers/:user_id", async function(req, res, auth){
-		var user_id = helper.sanitize(req.params.user_id);
-		var [err, result] = await wrap(libs.redisClient.zrevrangeAsync(`${FOLLOWER_PREFIX}:${user_id}`, 0, -1));
 		if (err) {
 			logger.error(err);
 			return res.replyError(err);

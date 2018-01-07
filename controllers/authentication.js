@@ -1,8 +1,8 @@
 "use strict";
 
 const log = rootRequire("libs/logger")('[auth]');
-const USER_PREFIX = "USER";
-const TOKEN_PREFIX = "TOKENS";
+const USER_PREFIX = "SL_USER";
+const TOKEN_PREFIX = "SL_TOKENS";
 const TOKEN_VERSION = 1;
 
 /**

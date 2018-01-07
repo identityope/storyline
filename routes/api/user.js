@@ -318,6 +318,42 @@ module.exports = function(libs, models, controllers, api){
 	/**
 	 * Author: ope
 	 *
+	 * @api {post} /user/unfollow Unfollow User
+	 * @apiName unfollowUser
+	 * @apiDescription Remove user relation so that authenticated user will unfollow another user with following_id
+	 * @apiGroup User
+	 * @apiVersion 1.0.0
+	 *
+	 * @apiHeader {String} Authorization User's token
+	 *
+	 * @apiParam {String} following_id User ID to be followed
+	 *
+	 * @apiSuccess {Object} data User object
+	 *
+	 * @apiHeaderExample {form-data} Header-Example:
+	 *   Authorization=Token DEVELOPMENT_TOKEN
+	 */
+	api.post("/user/unfollow", true, async function(req, res, auth){
+		var user_id = auth.user_id;
+		var following_id = helper.sanitize(req.body.following_id);
+		if (user_id === following_id) {
+			return res.replyError("Kamu tidak bisa mem-follow akun kamu sendiri");
+		}
+		// process follow user
+		var [err, result] = await wrap(controllers.user.unfollowUserById(user_id, following_id));
+		if (err) {
+			log.error(err);
+			return res.replyError(err);
+		}
+		if (!result) {
+			return res.reply(404, "Unfollowing user failed.");
+		}
+		res.reply(200, null, result);
+	});
+
+	/**
+	 * Author: ope
+	 *
 	 * @api {get} /user/followers Get User's Followers
 	 * @apiName getUsersFollowers
 	 * @apiDescription Get user's followers data.
