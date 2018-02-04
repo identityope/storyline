@@ -23,8 +23,8 @@ module.exports = function(libs, models) {
 			"total_followings": user.details.total_followings
 		};
 		user_data.profile.photo_raw = user_data.profile.photo;
-		user_data.profile.photo = helper.getUserPhotoURL(user_data._id, user_data.profile.photo);
-		user_data.profile.photo_thumbnail = helper.getUserPhotoThumbnailURL(user_data._id, user_data.profile.photo);
+		user_data.profile.photo = helper.getUserPhotoURL(user_data._id, user_data.profile.photo_raw);
+		user_data.profile.photo_thumbnail = helper.getUserPhotoThumbnailURL(user_data._id, user_data.profile.photo_raw);
 		user_data.profile.cover_photo = helper.getUserCoverPhotoURL(user_data._id, user_data.profile.cover_photo);
 		return user_data;
 	}

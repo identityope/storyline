@@ -135,5 +135,10 @@ module.exports = function(libs){
 		return libs.moment(date).format("HH:mm:ss");
 	};
 
+	helper.getMicroTime = function(time_uuid){
+		var times = new libs.timeUUID(time_uuid).getTimeOfDay();
+		return times[0] * 1e6 + times[1];
+	};
+
 	return helper;
 };

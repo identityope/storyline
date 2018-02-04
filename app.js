@@ -167,6 +167,4 @@ var gracefulExit = function(){
 	});
 };
 
-process.on('SIGINT', gracefulExit).on('SIGTERM', gracefulExit);
-
 module.exports = app;
